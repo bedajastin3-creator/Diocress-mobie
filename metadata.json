@@ -1,0 +1,8 @@
+{
+  "name": "Mobile Diocres Hardware\u0026Retail Solutions",
+  "description": "Offline-first cross-platform mobile Android and desktop point of sale, inventory tracking, multi-shop management, seller accounts, expenses, purchases, debts, and reporting system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

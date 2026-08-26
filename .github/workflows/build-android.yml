@@ -1,0 +1,70 @@
+name: Build Android App (APK & AAB)
+
+on:
+  push:
+    branches:
+      - mobile
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Build Web Application
+        run: npm run build
+
+      - name: Sync Capacitor Android
+        run: |
+          npx cap sync android || npx cap add android && npx cap sync android
+
+      - name: Build Android APK
+        working-directory: ./android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug assembleRelease
+
+      - name: Build Android App Bundle (AAB)
+        working-directory: ./android
+        run: |
+          ./gradlew bundleRelease || true
+
+      - name: Upload Android APK Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Diocres-Hardware-POS-Android-APK
+          path: |
+            android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload Android AAB Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Diocres-Hardware-POS-Android-AAB
+          path: |
+            android/app/build/outputs/bundle/**/*.aab
+          if-no-files-found: warn
+          retention-days: 30
