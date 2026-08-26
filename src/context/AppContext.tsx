@@ -151,7 +151,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addToast({
       type: 'success',
       title: `Welcome back, ${user.name}`,
-      description: `Logged in to Windows ${user.role} Portal (Offline-Ready)`,
+      description: `Logged in to ${user.role} Portal (Offline-Ready)`,
     });
   };
 

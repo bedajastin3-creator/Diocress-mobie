@@ -3,8 +3,13 @@ name: Build Android App (APK & AAB)
 on:
   push:
     branches:
-      - mobile
       - main
+      - master
+      - mobile
+  pull_request:
+    branches:
+      - main
+      - master
   workflow_dispatch:
 
 jobs:

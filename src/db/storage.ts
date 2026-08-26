@@ -485,7 +485,7 @@ class LocalDatabase {
     const payload = {
       version: '2.0.0',
       exportedAt: new Date().toISOString(),
-      generator: 'Diocres Windows Desktop Business System',
+      generator: 'Diocres Android Mobile Business System',
       data,
     };
     return JSON.stringify(payload, null, 2);
