@@ -8,6 +8,8 @@ import {
   Lock,
   Boxes,
   Smartphone,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { AuthService } from '../../services/authService';
@@ -20,6 +22,8 @@ export const LoginView: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  // Password visibility toggle — masked by default, eye click reveals, typing re-masks.
+  const [showPassword, setShowPassword] = useState(false);
 
   const settings = dbState.settings;
 
@@ -49,6 +53,22 @@ export const LoginView: React.FC = () => {
       setErrorMsg(err.message || 'An unexpected error occurred.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Reset password visibility whenever the portal is switched
+  const switchPortal = (role: UserRole) => {
+    setActivePortal(role);
+    setErrorMsg('');
+    setShowPassword(false);
+  };
+
+  // Password change handler — re-masks the field the moment the user
+  // types after having revealed it with the eye icon.
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+    if (showPassword) {
+      setShowPassword(false);
     }
   };
 
@@ -86,10 +106,7 @@ export const LoginView: React.FC = () => {
               <button
                 type="button"
                 id="portal-seller-btn"
-                onClick={() => {
-                  setActivePortal('SELLER');
-                  setErrorMsg('');
-                }}
+                onClick={() => switchPortal('SELLER')}
                 className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all active:scale-95 ${
                   activePortal === 'SELLER'
                     ? 'bg-blue-600 text-white shadow-md'
@@ -103,10 +120,7 @@ export const LoginView: React.FC = () => {
               <button
                 type="button"
                 id="portal-admin-btn"
-                onClick={() => {
-                  setActivePortal('ADMIN');
-                  setErrorMsg('');
-                }}
+                onClick={() => switchPortal('ADMIN')}
                 className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold transition-all active:scale-95 ${
                   activePortal === 'ADMIN'
                     ? 'bg-slate-800 text-amber-300 border border-amber-500/40 shadow-md'
@@ -143,26 +157,65 @@ export const LoginView: React.FC = () => {
                     onChange={e => setUsername(e.target.value)}
                     placeholder={activePortal === 'ADMIN' ? 'Enter admin username' : 'Enter seller username'}
                     autoFocus
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   />
                 </div>
               </div>
 
+              {/* Password — masked by default. Eye reveals it; typing re-masks it. */}
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                     <KeyRound className="w-4 h-4" />
                   </div>
+
+                  {/* Always type="text" so mobile keyboards behave predictably.
+                      When hidden, characters are masked with -webkit-text-security. */}
                   <input
                     id="login-password-input"
-                    type="password"
+                    type="text"
                     value={password}
-                    onChange={e => setPassword(e.target.value)}
+                    onChange={handlePasswordChange}
                     placeholder="Enter password..."
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    autoComplete="new-password"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck={false}
+                    enterKeyHint="done"
+                    style={
+                      showPassword
+                        ? undefined
+                        : ({ WebkitTextSecurity: 'disc' } as React.CSSProperties)
+                    }
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-11 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   />
+
+                  {/* Eye toggle — reveal while typing; hides again on next keystroke */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(v => !v)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 active:text-white transition"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
+
+                {/* Security hint */}
+                <p className="text-[10px] text-slate-500 mt-1.5 flex items-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  Password is hidden for your security. Tap the eye icon to reveal it.
+                </p>
               </div>
 
               <button
